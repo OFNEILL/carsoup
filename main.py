@@ -1,22 +1,16 @@
-import sys
-
 import requests
 from bs4 import BeautifulSoup
+from flask import Flask, jsonify
 
 global baseUrl
 
 baseUrl = "https://www.celtictuning.co.uk/component/ctvc/search?dvla="
 
-# get command line arguments
-args = sys.argv
-
-# remove the first argument (as it is always the scipt name)
-args.pop(0)
-
-licensePlate = args[0]
+# Initialize Flask app
+app = Flask(__name__)
 
 
-def main(licensePlate):
+def process(licensePlate):
     # URL of the webpage you want to get
     vehicle = None
 
@@ -66,10 +60,11 @@ def scrape(html):
     brand = vehicle[0]
     name = vehicle[1]
     model = vehicle[2]
-    year = vehicle[3]
-    fuel = vehicle[4]
-    engine = vehicle[5]
-    ecu = vehicle[6]
+    variant = vehicle[3]
+    year = vehicle[4]
+    fuel = vehicle[5]
+    engine = vehicle[6]
+    ecu = vehicle[7]
 
     print()
 
@@ -78,6 +73,7 @@ def scrape(html):
         f"Brand:   {brand}\n"
         f"Name:    {name}\n"
         f"Model:   {model}\n"
+        f"Variant: {variant}\n"
         f"Year:    {year}\n"
         f"Fuel:    {fuel}\n"
         f"Engine:  {engine}\n"
@@ -88,6 +84,7 @@ def scrape(html):
         "brand": brand,
         "name": name,
         "model": model,
+        "variant": variant,
         "year": year,
         "fuel": fuel,
         "engine": engine,
@@ -97,13 +94,23 @@ def scrape(html):
     return res
 
 
-if licensePlate == None or licensePlate == "":
-    # command has been used incorrectly
-    print("Please specify a license when making a command")
-    print()
-    print("EXAMPLE:")
-    print("python ecu-scraper REG41 TRO")
-    print()
+# Route to return vehicle details
+@app.route("/vehicle/<string:licensePlate>", methods=["GET"])
+def get_vehicle(licensePlate):
+    res = None
 
-else:
-    VEHICLE = main(licensePlate)
+    if licensePlate == None or licensePlate == "":
+        # command has been used incorrectly
+        res = {"error": "licensePlate is required"}
+
+    else:
+        # Vehicle data
+        res = process(licensePlate)
+
+    # Return the data as JSON
+    return jsonify(res)
+
+
+# Run the Flask app
+if __name__ == "__main__":
+    app.run(debug=True)
