@@ -51,6 +51,7 @@ def scrape(html):
 
     vehicleList = vehicleAttributes.find_all("p")
     vehicleList = vehicleAttributes.find_all("span") + vehicleAttributes.find_all("p")
+
     # para for para in paragraphs if not para.find('strong')]
     vehicle = [v for v in vehicleList if not v.find("strong")]
 
